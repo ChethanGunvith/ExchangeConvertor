@@ -1,0 +1,32 @@
+import com.chethan.buildsrc.Dependencies
+
+buildscript {
+    ext {
+        kotlin_version = '1.5.0'
+    }
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath Dependencies.androidGradlePlugin
+        classpath Dependencies.Kotlin.gradlePlugin
+        classpath Dependencies.HILT.gradle_plugin
+        classpath Dependencies.AndroidX.Navigation.safeArg
+        classpath Dependencies.Kotlin.allopen
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

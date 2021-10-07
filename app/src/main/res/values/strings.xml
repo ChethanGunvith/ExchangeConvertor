@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CurrencyCalculator</string>
+    <string name="choose_your_currency">Choose your currency</string>
+    <string name="access_restricted">Access Restricted - Your current Subscription Plan does not support Source Currency Switching</string>
+</resources>

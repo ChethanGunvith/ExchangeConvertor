@@ -1,0 +1,187 @@
+import com.chethan.buildsrc.Dependencies
+
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'androidx.navigation.safeargs'
+    id 'kotlin-allopen'
+}
+
+
+allOpen {
+    // allows mocking for classes w/o directly opening them for release builds
+    annotation 'com.example.tipjar.testing.OpenForTesting.OpenClass'
+}
+
+android {
+    compileSdkVersion Dependencies.Apps.compileSdk
+
+    defaultConfig {
+        applicationId "com.chethan.currencycalculator"
+        minSdkVersion Dependencies.Apps.minSdk
+        targetSdkVersion Dependencies.Apps.targetSdk
+        versionCode Dependencies.Apps.versionCode
+        versionName Dependencies.Apps.versionName
+
+        testInstrumentationRunner "com.example.tipjar.utils.TestRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        useIR = true
+    }
+
+    sourceSets {
+        androidTest.java.srcDirs += "src/test-common/java"
+        test.java.srcDirs += "src/test-common/java"
+    }
+
+    dataBinding {
+        enabled = true
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+
+configurations {
+    ktlint
+}
+
+dependencies {
+
+    implementation Dependencies.Kotlin.stdlib
+    implementation Dependencies.Coroutines.android
+
+    implementation Dependencies.AndroidX.coreKtx
+    implementation Dependencies.AndroidX.appcompat
+    implementation Dependencies.AndroidX.palette
+    implementation Dependencies.AndroidX.material
+    implementation Dependencies.AndroidX.flexbox
+
+    implementation Dependencies.AndroidX.constraintlayout
+    implementation Dependencies.AndroidX.Navigation.navigationFragmentKTX
+    implementation Dependencies.AndroidX.Navigation.navigationUIKTX
+    implementation Dependencies.AndroidX.Navigation.navigationDynamicKTX
+
+
+    implementation Dependencies.AndroidX.Lifecycle.extensions
+    implementation Dependencies.AndroidX.Lifecycle.livedata
+    implementation Dependencies.AndroidX.Lifecycle.viewmodel
+    implementation Dependencies.AndroidX.Fragment.fragment_ktx
+
+    implementation Dependencies.AndroidX.Compose.foundation
+    implementation Dependencies.AndroidX.Compose.uiUtil
+    implementation Dependencies.AndroidX.Compose.material
+    implementation Dependencies.AndroidX.Compose.materialIconsExtended
+    implementation Dependencies.AndroidX.Compose.tooling
+    implementation Dependencies.AndroidX.Compose.runtimeLivedata
+    implementation Dependencies.AndroidX.Compose.runtime
+    implementation Dependencies.AndroidX.Compose.viewBinding
+    implementation Dependencies.AndroidX.Compose.pagingCompose
+
+    implementation Dependencies.AndroidX.Work.runtime
+    implementation Dependencies.AndroidX.Work.ktx
+
+    implementation Dependencies.Retrofit.retrofit
+    implementation Dependencies.Retrofit.gson
+    implementation Dependencies.Retrofit.mock
+
+    implementation Dependencies.OkHttp.okhttp
+    implementation Dependencies.OkHttp.logging
+
+    // Hilt dependency Injection
+    implementation Dependencies.HILT.android
+    kapt Dependencies.HILT.compiler
+    implementation Dependencies.AndroidX.Room.runtime
+    kapt Dependencies.AndroidX.Room.compiler
+
+
+    //Lint warnings
+    ktlint Dependencies.LINT.ktlint
+
+    // Glide
+    implementation(Dependencies.Glide.runtime) {
+        exclude group: "com.android.support"
+    }
+    implementation Dependencies.Glide.okhttp3
+    kapt Dependencies.Glide.compiler
+
+    // Timber
+    implementation Dependencies.LOG.timber
+
+    // Room
+    implementation Dependencies.AndroidX.Room.runtime
+    implementation Dependencies.AndroidX.Room.ktx
+    kapt Dependencies.AndroidX.Room.compiler
+
+
+    // Network JSON Parser
+    // https://square.github.io/#android
+    def moshi_version = '1.12.0'
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+
+    testImplementation Dependencies.AndroidX.Test.coroutineTest
+    testImplementation Dependencies.AndroidX.TestImplementation.junit
+    //testImplementation Dependencies.AndroidX.TestImplementation.mock_web_server
+    testImplementation Dependencies.AndroidX.TestImplementation.arch_core_testing
+    testImplementation Dependencies.AndroidX.TestImplementation.mockito_core
+    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.atsl_core
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.atsl_ext_junit
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.atsl_runner
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.atsl_rules
+
+
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.espresso_core
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.espresso_contrib
+
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.arch_core_testing
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.mockito_core
+    androidTestImplementation Dependencies.AndroidX.TestImplementation.mockito_android
+}
+
+
+gradle.projectsEvaluated {
+    preBuild.dependsOn ktlintFormat
+}
+
+task ktlint(type: JavaExec, group: 'verification') {
+    description = 'Check Kotlin code style.'
+    main = 'com.pinterest.ktlint.Main'
+    classpath = configurations.ktlint
+    args '--disabled_rules=no-wildcard-imports', 'src/**/*.kt'
+}
+
+check.dependsOn ktlint
+
+task ktlintFormat(type: JavaExec, group: 'formatting') {
+    description = 'Fix Kotlin code style deviations.'
+    main = 'com.pinterest.ktlint.Main'
+    classpath = configurations.ktlint
+    args '--disabled_rules=no-wildcard-imports', '-F', 'src/**/*.kt'
+}
+
+// we need all open to run tests which we enable only for debug builds.
+project.tasks.whenTaskAdded {
+    if (it.name == "testReleaseUnitTest") {
+        it.enabled = false
+    }
+}
