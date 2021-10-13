@@ -23,7 +23,7 @@ class HomeScreenViewModel @Inject constructor(currencyRepository: CurrencyReposi
         _userSelectedCurrency.value = country
     }
     fun setUserPrice(price: String) {
-        _userPrice.value = price.toDouble()
+        _userPrice.value = price.toDoubleOrNull()
     }
 
     val listOfUserCurrencies: LiveData<Resource<List<UserCurrencies>>> =
